@@ -1,0 +1,1223 @@
+
+# Build the complete HTML presentation
+# Read the logo base64 data
+$logoDark = [Convert]::ToBase64String([IO.File]::ReadAllBytes("pptx_extracted\ppt\media\logoTws.png"))
+$logoLight = [Convert]::ToBase64String([IO.File]::ReadAllBytes("pptx_extracted\ppt\media\logoTwsLight.png"))
+
+$html = @"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="From College to Code - How Software Actually Gets Built. An inside look at the IT industry by Tekki Web Solutions.">
+<title>From College to Code | Tekki Web Solutions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Dark Theme (Default) */
+  --bg: #0A0E1A;
+  --surface: #111726;
+  --surface-border: #1E293B;
+  --text: #F1F5F9;
+  --text-muted: #94A3B8;
+  --text-secondary: #CBD5E1;
+  --accent-primary: #22D3EE;
+  --accent-secondary: #7C3AED;
+  --accent-glow: rgba(34,211,238,0.15);
+  /* Icon accent colors */
+  --icon-blue: #3B82F6;
+  --icon-purple: #A78BFA;
+  --icon-orange: #FB923C;
+  --icon-teal: #2DD4BF;
+  --icon-pink: #F472B6;
+  --icon-green: #4ADE80;
+  --icon-cyan: #22D3EE;
+  --icon-red: #F87171;
+  --icon-yellow: #FBBF24;
+  /* Logo */
+  --logo-display-dark: block;
+  --logo-display-light: none;
+  /* Font */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+[data-theme="light"] {
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-border: #E2E8F0;
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --text-secondary: #334155;
+  --accent-primary: #0891B2;
+  --accent-secondary: #7C3AED;
+  --accent-glow: rgba(8,145,178,0.1);
+  --logo-display-dark: none;
+  --logo-display-light: block;
+}
+
+[data-theme="purple"] {
+  --bg: #0D0117;
+  --surface: #1A0A2E;
+  --surface-border: #2D1B4E;
+  --text: #F5F3FF;
+  --text-muted: #A78BFA;
+  --text-secondary: #C4B5FD;
+  --accent-primary: #A78BFA;
+  --accent-secondary: #EC4899;
+  --accent-glow: rgba(167,139,250,0.15);
+  --logo-display-dark: block;
+  --logo-display-light: none;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width:100%; height:100%;
+  overflow:hidden;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Presentation Container */
+#presentation {
+  width:100%; height:100%;
+  position:relative;
+  overflow:hidden;
+}
+
+.slide {
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  display:flex;
+  flex-direction:column;
+  padding: 2.5rem 3.5rem 3rem;
+  background: var(--bg);
+  opacity:0;
+  transform: translateX(60px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+.slide.active {
+  opacity:1;
+  transform: translateX(0);
+  pointer-events:auto;
+  z-index:2;
+}
+
+.slide.prev {
+  opacity:0;
+  transform: translateX(-60px);
+}
+
+/* Logo */
+.logo {
+  position:absolute;
+  top:1rem; right:1.5rem;
+  height:42px;
+  z-index:10;
+}
+.logo-dark { display: var(--logo-display-dark); }
+.logo-light { display: var(--logo-display-light); }
+
+/* Section Tag */
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight:600;
+  letter-spacing: 0.15em;
+  color: var(--accent-primary);
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+}
+
+/* Slide Title */
+.slide-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  line-height:1.15;
+}
+
+/* Content Area */
+.slide-content {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* Footer */
+.slide-footer {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-top:0.75rem;
+  border-top: 1px solid var(--surface-border);
+  font-family: var(--font-mono);
+  font-size:0.7rem;
+  letter-spacing:0.1em;
+  color: var(--text-muted);
+}
+
+/* Cards Grid */
+.cards-grid {
+  display:grid;
+  gap:0.75rem;
+  flex:1;
+}
+.cards-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.cards-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.cards-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.cards-grid.cols-5 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  display:flex;
+  flex-direction:column;
+  gap:0.4rem;
+}
+
+.card .icon-badge {
+  width:36px; height:36px;
+  border-radius:0.5rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:0.25rem;
+  flex-shrink:0;
+}
+.card .icon-badge svg { width:18px; height:18px; stroke-width:2; }
+
+.card-number {
+  font-family: var(--font-mono);
+  font-size:0.65rem;
+  font-weight:700;
+  color: var(--accent-primary);
+  opacity:0.7;
+}
+
+.card h3 {
+  font-size:0.95rem;
+  font-weight:700;
+  color: var(--text);
+  line-height:1.2;
+}
+
+.card p {
+  font-size:0.75rem;
+  color: var(--text-muted);
+  line-height:1.45;
+}
+
+/* Table Style */
+.career-table {
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 0.35rem;
+  flex:1;
+}
+.career-table thead th {
+  font-family: var(--font-mono);
+  font-size:0.65rem;
+  font-weight:700;
+  letter-spacing:0.12em;
+  color: var(--accent-primary);
+  text-align:left;
+  padding:0.5rem 0.75rem;
+  text-transform:uppercase;
+}
+.career-table tbody tr {
+  background: var(--surface);
+}
+.career-table tbody td {
+  padding:0.55rem 0.75rem;
+  font-size:0.8rem;
+  color: var(--text-secondary);
+  border-top:1px solid var(--surface-border);
+  border-bottom:1px solid var(--surface-border);
+}
+.career-table tbody td:first-child {
+  border-left:1px solid var(--surface-border);
+  border-radius:0.5rem 0 0 0.5rem;
+  font-weight:600;
+  color: var(--text);
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+}
+.career-table tbody td:last-child {
+  border-right:1px solid var(--surface-border);
+  border-radius:0 0.5rem 0.5rem 0;
+}
+
+/* Mistake blocks */
+.mistake-block {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:0.75rem;
+  padding:0.85rem 1rem;
+  display:flex;
+  gap:0.75rem;
+  align-items:flex-start;
+}
+.mistake-num {
+  font-family: var(--font-mono);
+  font-size:1.1rem;
+  font-weight:800;
+  color: var(--icon-red);
+  flex-shrink:0;
+  width:22px;
+}
+.mistake-content h3 {
+  font-size:0.9rem;
+  font-weight:700;
+  color: var(--text);
+  margin-bottom:0.2rem;
+}
+.mistake-content p {
+  font-size:0.72rem;
+  color: var(--text-muted);
+  line-height:1.4;
+}
+.mistake-content .highlight {
+  font-family: var(--font-mono);
+  font-size:0.65rem;
+  font-weight:700;
+  color: var(--accent-primary);
+  margin-top:0.25rem;
+  letter-spacing:0.05em;
+}
+
+/* Phase blocks for slide 5 (How a real project is executed) */
+.phases-container {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1rem;
+  flex:1;
+}
+.phase {
+  display:flex;
+  flex-direction:column;
+  gap:0.5rem;
+}
+.phase-title {
+  font-family: var(--font-mono);
+  font-size:0.72rem;
+  font-weight:700;
+  letter-spacing:0.1em;
+  color: var(--accent-primary);
+  margin-bottom:0.25rem;
+}
+.phase-step {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:0.6rem;
+  padding:0.55rem 0.75rem;
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+}
+.phase-step .icon-badge {
+  width:30px; height:30px;
+  border-radius:0.4rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.phase-step .icon-badge svg { width:15px; height:15px; stroke-width:2; }
+.phase-step-text h4 {
+  font-size:0.78rem;
+  font-weight:600;
+  color: var(--text);
+}
+.phase-step-text p {
+  font-size:0.65rem;
+  color: var(--text-muted);
+}
+.phase-arrow {
+  text-align:center;
+  color: var(--text-muted);
+  font-size:0.7rem;
+  opacity:0.5;
+}
+
+/* Domain tags for slide 6 */
+.domain-grid {
+  display:grid;
+  grid-template-columns: repeat(5,1fr);
+  gap:0.65rem;
+  flex:1;
+  align-content:start;
+}
+.domain-tag {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:0.6rem;
+  padding:0.75rem;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:0.4rem;
+  text-align:center;
+}
+.domain-tag .icon-badge {
+  width:34px; height:34px;
+  border-radius:0.45rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.domain-tag .icon-badge svg { width:17px; height:17px; stroke-width:2; }
+.domain-tag span {
+  font-size:0.72rem;
+  font-weight:600;
+  color: var(--text);
+}
+
+/* Identity cards for slide 7 */
+.identity-cards {
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:1rem;
+  flex:1;
+}
+.identity-card {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:0.85rem;
+  padding:1.5rem;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:0.6rem;
+}
+.identity-card .icon-badge {
+  width:50px; height:50px;
+  border-radius:0.6rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.identity-card .icon-badge svg { width:24px; height:24px; stroke-width:2; }
+.identity-card h3 { font-size:1.1rem; font-weight:700; }
+.identity-card p { font-size:0.8rem; color:var(--text-muted); line-height:1.5; }
+
+/* Roadmap for slide 8 */
+.roadmap-grid {
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:0.55rem;
+  flex:1;
+  align-content:start;
+}
+.roadmap-step {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:0.6rem;
+  padding:0.65rem 0.8rem;
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+}
+.roadmap-num {
+  font-family: var(--font-mono);
+  font-size:0.6rem;
+  font-weight:700;
+  color: var(--bg);
+  background: var(--accent-primary);
+  width:22px; height:22px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.roadmap-step .icon-badge {
+  width:28px; height:28px;
+  border-radius:0.4rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.roadmap-step .icon-badge svg { width:14px; height:14px; stroke-width:2; }
+.roadmap-step span { font-size:0.78rem; font-weight:600; color:var(--text); }
+
+/* Five things for slide 9 */
+.five-grid {
+  display:grid;
+  grid-template-columns: repeat(5,1fr);
+  gap:0.85rem;
+  flex:1;
+  align-content:center;
+}
+.five-card {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:0.75rem;
+  padding:1.25rem 1rem;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:0.5rem;
+}
+.five-num {
+  font-family: var(--font-mono);
+  font-size:1.5rem;
+  font-weight:900;
+  color: var(--accent-primary);
+}
+.five-card .icon-badge {
+  width:40px; height:40px;
+  border-radius:0.5rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.five-card .icon-badge svg { width:20px; height:20px; stroke-width:2; }
+.five-card span { font-size:0.82rem; font-weight:600; color:var(--text); line-height:1.3; }
+
+/* AI slide */
+.ai-content {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:1.5rem;
+}
+.ai-icon-row {
+  display:flex;
+  gap:1.5rem;
+  align-items:center;
+}
+.ai-icon-row .icon-badge {
+  width:64px; height:64px;
+  border-radius:1rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.ai-icon-row .icon-badge svg { width:32px; height:32px; stroke-width:1.5; }
+.ai-subtitle {
+  font-size:1rem;
+  color: var(--text-muted);
+  max-width:600px;
+  line-height:1.6;
+}
+
+/* AI Demo slide */
+.demo-flow {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:1.5rem;
+  flex:1;
+}
+.demo-step {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:0.85rem;
+  padding:1.5rem 2rem;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0.6rem;
+  text-align:center;
+}
+.demo-step .icon-badge {
+  width:50px; height:50px;
+  border-radius:0.6rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.demo-step .icon-badge svg { width:24px; height:24px; stroke-width:2; }
+.demo-step h3 { font-size:1rem; font-weight:700; }
+.demo-arrow { color: var(--accent-primary); font-size:1.5rem; }
+
+/* Q&A slide */
+.qa-content {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:1.2rem;
+}
+.qa-title { font-size:3rem; font-weight:900; line-height:1.1; }
+.qa-subtitle { font-size:2.5rem; font-weight:900; color:var(--accent-primary); }
+.qa-tags { display:flex; gap:0.6rem; flex-wrap:wrap; justify-content:center; }
+.qa-tag {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:2rem;
+  padding:0.45rem 1.1rem;
+  font-size:0.82rem;
+  font-weight:600;
+  color: var(--text-secondary);
+}
+
+/* Cover slide */
+.cover-content {
+  flex:1;
+  display:flex;
+  align-items:center;
+  gap:2rem;
+}
+.cover-left { flex:1; }
+.cover-tag {
+  display:inline-block;
+  border: 1.5px solid var(--accent-primary);
+  border-radius:2rem;
+  padding:0.35rem 1rem;
+  font-family: var(--font-mono);
+  font-size:0.7rem;
+  font-weight:700;
+  letter-spacing:0.08em;
+  color: var(--accent-primary);
+  margin-bottom:1rem;
+}
+.cover-title {
+  font-size:3.2rem;
+  font-weight:900;
+  line-height:1.05;
+  margin-bottom:0.5rem;
+}
+.cover-accent { color: var(--accent-primary); }
+.cover-sub {
+  font-size:0.85rem;
+  color: var(--text-muted);
+  letter-spacing:0.15em;
+  font-family: var(--font-mono);
+  margin-top:1.5rem;
+}
+.cover-line {
+  width:250px;
+  height:2px;
+  background: var(--surface-border);
+  margin:1rem 0;
+}
+.cover-badges {
+  display:flex;
+  gap:0.6rem;
+  margin-top:1.5rem;
+}
+.cover-badge {
+  border-radius:2rem;
+  padding:0.35rem 1rem;
+  font-family: var(--font-mono);
+  font-size:0.7rem;
+  font-weight:700;
+  letter-spacing:0.04em;
+}
+.cover-badge-dark { background: var(--surface); color: var(--text-secondary); }
+.cover-badge-accent { background: var(--accent-secondary); color:#fff; }
+
+.cover-right {
+  width:220px;
+  flex-shrink:0;
+}
+.terminal-box {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:0.75rem;
+  padding:1.2rem;
+  font-family: var(--font-mono);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.terminal-dots {
+  display:flex;
+  gap:5px;
+  margin-bottom:0.8rem;
+}
+.terminal-dot {
+  width:8px; height:8px;
+  border-radius:50%;
+  background: var(--surface-border);
+}
+.term-line { margin-bottom:0.3rem; }
+.term-cmd { color: var(--accent-primary); font-size:0.72rem; }
+.term-out { color: var(--text-secondary); font-size:0.65rem; }
+.term-warn { color: var(--icon-orange); font-size:0.65rem; }
+.term-icon {
+  display:inline-flex;
+  width:48px; height:48px;
+  border-radius:50%;
+  background: var(--accent-primary);
+  align-items:center;
+  justify-content:center;
+  margin-top:0.5rem;
+}
+.term-icon svg { width:24px; height:24px; stroke: var(--bg); stroke-width:2; }
+
+/* Quote */
+.slide-quote {
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-left:3px solid var(--accent-primary);
+  border-radius:0 0.5rem 0.5rem 0;
+  padding:0.65rem 1rem;
+  font-size:0.78rem;
+  font-style:italic;
+  color: var(--text-muted);
+  margin-top:auto;
+}
+
+.slide-bottom-text {
+  text-align:center;
+  font-size:0.85rem;
+  color: var(--text-muted);
+  margin-top:auto;
+  padding:1rem;
+}
+
+/* Navigation */
+.nav-controls {
+  position:fixed;
+  bottom:0; left:0; right:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 1.5rem 0.75rem;
+  z-index:100;
+  pointer-events:none;
+}
+.nav-btn {
+  pointer-events:auto;
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  color: var(--text);
+  border-radius:0.5rem;
+  padding:0.4rem 1rem;
+  font-family: var(--font-sans);
+  font-size:0.75rem;
+  font-weight:600;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:0.35rem;
+  transition: all 0.2s;
+  opacity:0.8;
+}
+.nav-btn:hover { opacity:1; background: var(--accent-glow); border-color: var(--accent-primary); }
+.nav-btn:disabled { opacity:0.3; cursor:default; pointer-events:none; }
+.nav-btn svg { width:14px; height:14px; }
+
+/* Progress */
+.progress-bar {
+  position:fixed;
+  top:0; left:0; right:0;
+  height:3px;
+  background: var(--surface-border);
+  z-index:100;
+}
+.progress-fill {
+  height:100%;
+  background: var(--accent-primary);
+  transition: width 0.4s ease;
+}
+
+/* Theme Switcher */
+.theme-switcher {
+  position:fixed;
+  top:0.75rem; left:0.75rem;
+  z-index:100;
+  display:flex;
+  gap:0.3rem;
+  background: var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:0.5rem;
+  padding:0.25rem;
+}
+.theme-btn {
+  width:22px; height:22px;
+  border-radius:0.3rem;
+  border:2px solid transparent;
+  cursor:pointer;
+  transition: all 0.2s;
+}
+.theme-btn:hover { transform:scale(1.15); }
+.theme-btn.active { border-color: var(--text); }
+.theme-btn[data-theme="dark"] { background: #0A0E1A; }
+.theme-btn[data-theme="light"] { background: #F8FAFC; }
+.theme-btn[data-theme="purple"] { background: #1A0A2E; }
+
+/* Click zones */
+.click-zone {
+  position:absolute;
+  top:0;
+  height:100%;
+  width:35%;
+  z-index:5;
+  cursor:pointer;
+}
+.click-zone-left { left:0; }
+.click-zone-right { right:0; }
+
+/* Color utilities */
+.bg-blue { background: rgba(59,130,246,0.15); }
+.bg-purple { background: rgba(167,139,250,0.15); }
+.bg-orange { background: rgba(251,146,60,0.15); }
+.bg-teal { background: rgba(45,212,191,0.15); }
+.bg-pink { background: rgba(244,114,182,0.15); }
+.bg-green { background: rgba(74,222,128,0.15); }
+.bg-cyan { background: rgba(34,211,238,0.15); }
+.bg-red { background: rgba(248,113,113,0.15); }
+.bg-yellow { background: rgba(251,191,36,0.15); }
+
+.text-blue svg { stroke: var(--icon-blue); }
+.text-purple svg { stroke: var(--icon-purple); }
+.text-orange svg { stroke: var(--icon-orange); }
+.text-teal svg { stroke: var(--icon-teal); }
+.text-pink svg { stroke: var(--icon-pink); }
+.text-green svg { stroke: var(--icon-green); }
+.text-cyan svg { stroke: var(--icon-cyan); }
+.text-red svg { stroke: var(--icon-red); }
+.text-yellow svg { stroke: var(--icon-yellow); }
+</style>
+</head>
+<body>
+<!-- Progress Bar -->
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:8.33%"></div></div>
+
+<!-- Theme Switcher -->
+<div class="theme-switcher">
+  <button class="theme-btn active" data-theme="dark" title="Dark theme" onclick="setTheme('dark',this)"></button>
+  <button class="theme-btn" data-theme="light" title="Light theme" onclick="setTheme('light',this)"></button>
+  <button class="theme-btn" data-theme="purple" title="Purple theme" onclick="setTheme('purple',this)"></button>
+</div>
+
+<div id="presentation">
+
+<!-- SLIDE 1: Cover (Old Slide 1) -->
+<div class="slide active" id="slide-1">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="cover-content">
+    <div class="cover-left">
+      <div class="cover-tag">&lt;/&gt; INDUSTRIAL VISIT</div>
+      <div class="cover-title">FROM COLLEGE</div>
+      <div class="cover-title">TO CODE</div>
+      <div class="cover-accent" style="font-size:1.5rem;font-weight:700;margin-top:0.5rem;">How Software Actually Gets Built</div>
+      <div class="cover-line"></div>
+      <div class="cover-sub">AN INSIDE LOOK AT THE IT INDUSTRY</div>
+      <div class="cover-badges">
+        <span class="cover-badge cover-badge-dark">Tekki Web Solutions</span>
+        <span class="cover-badge cover-badge-accent">INDUSTRIAL VISIT PROGRAM</span>
+      </div>
+    </div>
+    <div class="cover-right">
+      <div class="terminal-box">
+        <div class="terminal-dots"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span></div>
+        <div class="term-line"><span class="term-cmd">&gt; whoami</span></div>
+        <div class="term-line"><span class="term-out">future_developer</span></div>
+        <div class="term-line" style="margin-top:0.5rem"><span class="term-cmd">&gt; status</span></div>
+        <div class="term-line"><span class="term-out">college == 100%</span></div>
+        <div class="term-line"><span class="term-out">industry == 0%</span></div>
+        <div class="term-line" style="margin-top:0.5rem"><span class="term-cmd">&gt; loading</span></div>
+        <div class="term-line"><span class="term-warn">reality_check.exe</span></div>
+        <div style="text-align:center;margin-top:0.7rem">
+          <span class="term-icon"><svg fill="none" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: Skills That Truly Matter (Old Slide 2) -->
+<div class="slide" id="slide-2">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 01 &#8212; BREAK THE COLLEGE BUBBLE</div>
+  <h1 class="slide-title">Skills That Truly Matter</h1>
+  <div class="slide-content">
+    <div class="cards-grid cols-5">
+      <div class="card">
+        <span class="card-number">01</span>
+        <div class="icon-badge bg-blue text-blue"><svg fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div>
+        <h3>Problem Solving</h3>
+        <p>Can you break a real problem into smaller problems?</p>
+      </div>
+      <div class="card">
+        <span class="card-number">02</span>
+        <div class="icon-badge bg-purple text-purple"><svg fill="none" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></div>
+        <h3>Strong Fundamentals</h3>
+        <p>Programming, databases, APIs, networking, Git, etc.</p>
+      </div>
+      <div class="card">
+        <span class="card-number">03</span>
+        <div class="icon-badge bg-green text-green"><svg fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+        <h3>Communication</h3>
+        <p>Can you explain what you built &#8212; and why?</p>
+      </div>
+      <div class="card">
+        <span class="card-number">04</span>
+        <div class="icon-badge bg-orange text-orange"><svg fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+        <h3>Teamwork</h3>
+        <p>Real projects are built by teams, not individuals.</p>
+      </div>
+      <div class="card">
+        <span class="card-number">05</span>
+        <div class="icon-badge bg-cyan text-cyan"><svg fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg></div>
+        <h3>AI Literacy</h3>
+        <p>Knowing how to use AI effectively is now a core skill.</p>
+      </div>
+    </div>
+    <div class="slide-quote" style="margin-top:0.75rem">&ldquo;Companies don&rsquo;t just hire people who can code. They hire people who can solve problems.&rdquo;</div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>01 / 12</span></div>
+</div>
+
+<!-- SLIDE 3: The Most Common Mistakes Students Make (Old Slide 3) -->
+<div class="slide" id="slide-3">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 02 &#8212; COMMON STUDENT MISTAKES</div>
+  <h1 class="slide-title">The Most Common Mistakes Students Make</h1>
+  <div class="slide-content" style="gap:0.6rem;display:flex;flex-direction:column">
+    <div class="mistake-block">
+      <span class="mistake-num">1</span>
+      <div class="icon-badge bg-red text-red" style="width:32px;height:32px;border-radius:0.4rem;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg fill="none" viewBox="0 0 24 24" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
+      <div class="mistake-content">
+        <h3>Learning Too Many Technologies</h3>
+        <p>React + Angular + Vue + Java + Python + .NET + AWS + ML + ...</p>
+        <div class="highlight">DON'T TRY TO BECOME EVERYTHING</div>
+      </div>
+    </div>
+    <div class="mistake-block">
+      <span class="mistake-num">2</span>
+      <div class="icon-badge bg-orange text-orange" style="width:32px;height:32px;border-radius:0.4rem;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg fill="none" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div>
+      <div class="mistake-content">
+        <h3>Watching Tutorials, Never Building</h3>
+        <p>Tutorial &#8594; Tutorial &#8594; Tutorial &#8594; &#8734;<br>Learn &#8594; Build &#8594; Break &#8594; Fix &#8594; &#10003;</p>
+        <div class="highlight">Skill comes from the second loop, not the first.</div>
+      </div>
+    </div>
+    <div class="mistake-block">
+      <span class="mistake-num">3</span>
+      <div class="icon-badge bg-yellow text-yellow" style="width:32px;height:32px;border-radius:0.4rem;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg fill="none" viewBox="0 0 24 24" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+      <div class="mistake-content">
+        <h3>Thinking &ldquo;I Have Time&rdquo;</h3>
+        <p>4th Year &#8594; Placement &#8594; Graduation &#8594; Job</p>
+        <div class="highlight">START BEFORE YOU FEEL READY</div>
+      </div>
+    </div>
+    <div class="mistake-block">
+      <span class="mistake-num">4</span>
+      <div class="icon-badge bg-purple text-purple" style="width:32px;height:32px;border-radius:0.4rem;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg fill="none" viewBox="0 0 24 24" style="width:16px;height:16px"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg></div>
+      <div class="mistake-content">
+        <h3>Certificates Over Skills</h3>
+        <p>10 Certificates &#8800; 10 Projects. Certificates prove you completed something. Projects prove you can build something.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>02 / 12</span></div>
+</div>
+
+<!-- SLIDE 4: Career Paths & What to Learn (Old Slide 4) -->
+<div class="slide" id="slide-4">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 03 &#8212; CHOOSING A CAREER DIRECTION</div>
+  <h1 class="slide-title">Career Paths &amp; What to Learn</h1>
+  <div class="slide-content">
+    <table class="career-table">
+      <thead><tr><th>CAREER PATH</th><th>START WITH</th></tr></thead>
+      <tbody>
+        <tr><td><div class="icon-badge bg-blue text-blue" style="width:24px;height:24px;border-radius:0.3rem;display:inline-flex;align-items:center;justify-content:center"><svg fill="none" viewBox="0 0 24 24" style="width:13px;height:13px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg></div> Frontend Developer</td><td>HTML, CSS, JavaScript, React</td></tr>
+        <tr><td><div class="icon-badge bg-purple text-purple" style="width:24px;height:24px;border-radius:0.3rem;display:inline-flex;align-items:center;justify-content:center"><svg fill="none" viewBox="0 0 24 24" style="width:13px;height:13px"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg></div> Backend Developer</td><td>Python / Java / Node.js, SQL, APIs</td></tr>
+        <tr><td><div class="icon-badge bg-cyan text-cyan" style="width:24px;height:24px;border-radius:0.3rem;display:inline-flex;align-items:center;justify-content:center"><svg fill="none" viewBox="0 0 24 24" style="width:13px;height:13px"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg></div> AI/ML Engineer</td><td>Python, Statistics, ML Fundamentals</td></tr>
+        <tr><td><div class="icon-badge bg-orange text-orange" style="width:24px;height:24px;border-radius:0.3rem;display:inline-flex;align-items:center;justify-content:center"><svg fill="none" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></div> DevOps Engineer</td><td>Linux, Networking, Git, Docker, Cloud</td></tr>
+        <tr><td><div class="icon-badge bg-red text-red" style="width:24px;height:24px;border-radius:0.3rem;display:inline-flex;align-items:center;justify-content:center"><svg fill="none" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></div> QA / Test Automation</td><td>Testing Concepts, SQL, Automation</td></tr>
+        <tr><td><div class="icon-badge bg-green text-green" style="width:24px;height:24px;border-radius:0.3rem;display:inline-flex;align-items:center;justify-content:center"><svg fill="none" viewBox="0 0 24 24" style="width:13px;height:13px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div> Data Analyst</td><td>Excel, SQL, Python, Power BI</td></tr>
+        <tr><td><div class="icon-badge bg-pink text-pink" style="width:24px;height:24px;border-radius:0.3rem;display:inline-flex;align-items:center;justify-content:center"><svg fill="none" viewBox="0 0 24 24" style="width:13px;height:13px"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg></div> Data Scientist</td><td>Python, Statistics, SQL, Machine Learning</td></tr>
+        <tr><td><div class="icon-badge bg-teal text-teal" style="width:24px;height:24px;border-radius:0.3rem;display:inline-flex;align-items:center;justify-content:center"><svg fill="none" viewBox="0 0 24 24" style="width:13px;height:13px"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></div> Data Engineer</td><td>Python/SQL, Databases, ETL/ELT, Cloud</td></tr>
+      </tbody>
+    </table>
+    <div class="slide-bottom-text">You can explore later. But build depth first.</div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>03 / 12</span></div>
+</div>
+
+<!-- SLIDE 5: How a Real Project Is Executed (Old Slide 6) -->
+<div class="slide" id="slide-5">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 05 &#8212; HOW REAL SOFTWARE IS BUILT</div>
+  <h1 class="slide-title">How a Real Project Is Executed</h1>
+  <div class="slide-content">
+    <div class="phases-container">
+      <div class="phase">
+        <div class="phase-title">PHASE 1 &#8226; PLAN &amp; BUILD</div>
+        <div class="phase-step"><div class="icon-badge bg-green text-green"><svg fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><div class="phase-step-text"><h4>Client Idea</h4><p>Where it all begins</p></div></div>
+        <div class="phase-arrow">&#8595;</div>
+        <div class="phase-step"><div class="icon-badge bg-blue text-blue"><svg fill="none" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></div><div class="phase-step-text"><h4>Requirements</h4><p>What does the client need?</p></div></div>
+        <div class="phase-arrow">&#8595;</div>
+        <div class="phase-step"><div class="icon-badge bg-purple text-purple"><svg fill="none" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg></div><div class="phase-step-text"><h4>Planning</h4><p>How will we build it?</p></div></div>
+        <div class="phase-arrow">&#8595;</div>
+        <div class="phase-step"><div class="icon-badge bg-pink text-pink"><svg fill="none" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg></div><div class="phase-step-text"><h4>UI/UX Design</h4><p>What will the user see?</p></div></div>
+        <div class="phase-arrow">&#8595;</div>
+        <div class="phase-step"><div class="icon-badge bg-cyan text-cyan"><svg fill="none" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><div class="phase-step-text"><h4>Development</h4><p>Frontend + Backend + DB + APIs</p></div></div>
+      </div>
+      <div class="phase">
+        <div class="phase-title">PHASE 2 &#8226; LAUNCH &amp; GROW</div>
+        <div class="phase-step"><div class="icon-badge bg-red text-red"><svg fill="none" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></div><div class="phase-step-text"><h4>Testing / QA</h4><p>Does it actually work?</p></div></div>
+        <div class="phase-arrow">&#8595;</div>
+        <div class="phase-step"><div class="icon-badge bg-teal text-teal"><svg fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div><div class="phase-step-text"><h4>Deployment</h4><p>Put it into the real world</p></div></div>
+        <div class="phase-arrow">&#8595;</div>
+        <div class="phase-step"><div class="icon-badge bg-yellow text-yellow"><svg fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></div><div class="phase-step-text"><h4>Monitoring</h4><p>Is everything still working?</p></div></div>
+        <div class="phase-arrow">&#8595;</div>
+        <div class="phase-step"><div class="icon-badge bg-orange text-orange"><svg fill="none" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></div><div class="phase-step-text"><h4>Maintenance</h4><p>Fix, improve, evolve</p></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>04 / 12</span></div>
+</div>
+
+<!-- SLIDE 6: Stop Building To-Do Apps (Old Slide 8) -->
+<div class="slide" id="slide-6">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 09 &#8212; WHAT SHOULD STUDENTS BUILD?</div>
+  <h1 class="slide-title">Stop Building To-Do Apps &#128516;</h1>
+  <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem">Your portfolio should show that you can solve real problems.</p>
+  <div class="slide-content">
+    <div class="domain-grid">
+      <div class="domain-tag"><div class="icon-badge bg-blue text-blue"><svg fill="none" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></div><span>E-commerce</span></div>
+      <div class="domain-tag"><div class="icon-badge bg-green text-green"><svg fill="none" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div><span>FinTech</span></div>
+      <div class="domain-tag"><div class="icon-badge bg-orange text-orange"><svg fill="none" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg></div><span>Food Delivery</span></div>
+      <div class="domain-tag"><div class="icon-badge bg-red text-red"><svg fill="none" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div><span>Healthcare</span></div>
+      <div class="domain-tag"><div class="icon-badge bg-purple text-purple"><svg fill="none" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><span>Education</span></div>
+      <div class="domain-tag"><div class="icon-badge bg-teal text-teal"><svg fill="none" viewBox="0 0 24 24"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div><span>Logistics</span></div>
+      <div class="domain-tag"><div class="icon-badge bg-pink text-pink"><svg fill="none" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg></div><span>HR / Recruitment</span></div>
+      <div class="domain-tag"><div class="icon-badge bg-cyan text-cyan"><svg fill="none" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></div><span>Social Platforms</span></div>
+      <div class="domain-tag"><div class="icon-badge bg-yellow text-yellow"><svg fill="none" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg></div><span>SaaS Applications</span></div>
+      <div class="domain-tag"><div class="icon-badge bg-green text-green"><svg fill="none" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></div><span>Inventory Management</span></div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>05 / 12</span></div>
+</div>
+
+<!-- SLIDE 7: Build Your Professional Identity (Old Slide 9) -->
+<div class="slide" id="slide-7">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 10 &#8212; FROM COLLEGE TO JOB</div>
+  <h1 class="slide-title">Build Your Professional Identity</h1>
+  <div class="slide-content">
+    <div class="identity-cards">
+      <div class="identity-card">
+        <div class="icon-badge bg-blue text-blue"><svg fill="none" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></div>
+        <h3>LinkedIn</h3>
+        <p>Build your professional network.</p>
+      </div>
+      <div class="identity-card">
+        <div class="icon-badge bg-purple text-purple"><svg fill="none" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></div>
+        <h3>GitHub</h3>
+        <p>Show your code and projects.</p>
+      </div>
+      <div class="identity-card">
+        <div class="icon-badge bg-green text-green"><svg fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+        <h3>Resume</h3>
+        <p>Show impact, not just technologies.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>06 / 12</span></div>
+</div>
+
+<!-- SLIDE 8: Your Roadmap (Old Slide 10) -->
+<div class="slide" id="slide-8">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 10 &#8212; FROM COLLEGE TO JOB</div>
+  <h1 class="slide-title">Your Roadmap</h1>
+  <div class="slide-content">
+    <div class="roadmap-grid">
+      <div class="roadmap-step"><span class="roadmap-num">1</span><div class="icon-badge bg-blue text-blue"><svg fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div><span>Choose ONE career direction</span></div>
+      <div class="roadmap-step"><span class="roadmap-num">2</span><div class="icon-badge bg-purple text-purple"><svg fill="none" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><span>Learn fundamentals</span></div>
+      <div class="roadmap-step"><span class="roadmap-num">3</span><div class="icon-badge bg-cyan text-cyan"><svg fill="none" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><span>Build projects</span></div>
+      <div class="roadmap-step"><span class="roadmap-num">4</span><div class="icon-badge bg-green text-green"><svg fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg></div><span>Use AI effectively</span></div>
+      <div class="roadmap-step"><span class="roadmap-num">5</span><div class="icon-badge bg-orange text-orange"><svg fill="none" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></div><span>Put projects on GitHub</span></div>
+      <div class="roadmap-step"><span class="roadmap-num">6</span><div class="icon-badge bg-blue text-blue"><svg fill="none" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></div><span>Build LinkedIn presence</span></div>
+      <div class="roadmap-step"><span class="roadmap-num">7</span><div class="icon-badge bg-pink text-pink"><svg fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div><span>Prepare resume</span></div>
+      <div class="roadmap-step"><span class="roadmap-num">8</span><div class="icon-badge bg-teal text-teal"><svg fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div><span>Practice interviews</span></div>
+      <div class="roadmap-step"><span class="roadmap-num">9</span><div class="icon-badge bg-yellow text-yellow"><svg fill="none" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></div><span>Apply &#8594; Interview &#8594; Learn &#8594; Repeat</span></div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>07 / 12</span></div>
+</div>
+
+<!-- SLIDE 9: If You Remember Only 5 Things (Old Slide 11) -->
+<div class="slide" id="slide-9">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 11 &#8212; FINAL MESSAGE</div>
+  <h1 class="slide-title">If You Remember Only 5 Things</h1>
+  <div class="slide-content">
+    <div class="five-grid">
+      <div class="five-card"><span class="five-num">1</span><div class="icon-badge bg-purple text-purple"><svg fill="none" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><span>Learn fundamentals</span></div>
+      <div class="five-card"><span class="five-num">2</span><div class="icon-badge bg-blue text-blue"><svg fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div><span>Pick one direction</span></div>
+      <div class="five-card"><span class="five-num">3</span><div class="icon-badge bg-cyan text-cyan"><svg fill="none" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><span>Build real projects</span></div>
+      <div class="five-card"><span class="five-num">4</span><div class="icon-badge bg-green text-green"><svg fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg></div><span>Learn to use AI effectively</span></div>
+      <div class="five-card"><span class="five-num">5</span><div class="icon-badge bg-orange text-orange"><svg fill="none" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div><span>Start before you feel ready</span></div>
+    </div>
+    <div style="text-align:center;margin-top:1rem;color:var(--text-muted);font-size:0.85rem;line-height:1.6">
+      Don&rsquo;t wait for the industry to teach you.<br>Start preparing for it now.
+    </div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>08 / 12</span></div>
+</div>
+
+<!-- SLIDE 10: AI Won't Replace Developers (Old Slide 5) -->
+<div class="slide" id="slide-10">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 04 &#8212; HOW TO USE AI</div>
+  <h1 class="slide-title" style="text-align:center;font-size:2rem">AI Won&rsquo;t Replace Developers &#8212;</h1>
+  <div class="ai-content">
+    <h2 style="font-size:2rem;font-weight:800;color:var(--accent-primary)">Developers Using AI Will Move Faster.</h2>
+    <div class="ai-icon-row">
+      <div class="icon-badge bg-cyan text-cyan"><svg fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg></div>
+      <span style="font-size:2rem;color:var(--text-muted)">+</span>
+      <div class="icon-badge bg-yellow text-yellow"><svg fill="none" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
+    </div>
+    <p class="ai-subtitle">Treat AI as a developer tool &#8212; an accelerator for understanding &#8212; not a replacement for it.</p>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>09 / 12</span></div>
+</div>
+
+<!-- SLIDE 11: Let's Build Something With AI (Old Slide 7) -->
+<div class="slide" id="slide-11">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="section-tag">SECTION 08 &#8212; AI + SOFTWARE DEVELOPMENT</div>
+  <h1 class="slide-title" style="text-align:center">Let&rsquo;s Build Something With AI</h1>
+  <div class="slide-content">
+    <div class="demo-flow">
+      <div class="demo-step">
+        <div class="icon-badge bg-green text-green"><svg fill="none" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+        <h3>Prompt</h3>
+      </div>
+      <span class="demo-arrow">&#8594;</span>
+      <div class="demo-step">
+        <div class="icon-badge bg-cyan text-cyan"><svg fill="none" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg></div>
+        <h3>AI</h3>
+      </div>
+      <span class="demo-arrow">&#8594;</span>
+      <div class="demo-step">
+        <div class="icon-badge bg-purple text-purple"><svg fill="none" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></div>
+        <h3>Working Prototype</h3>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:1rem">
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem">Example: &ldquo;Student Event Management Dashboard&rdquo;</p>
+      <div class="slide-quote" style="display:inline-block;max-width:500px;border-left-color:var(--accent-secondary)">&ldquo;If this is possible today, I need to learn how to work WITH AI.&rdquo;</div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>10 / 12</span></div>
+</div>
+
+<!-- SLIDE 12: Your Turn. Ask Anything. (Old Slide 12) -->
+<div class="slide" id="slide-12">
+  <img class="logo logo-dark" src="data:image/png;base64,$logoDark" alt="TWS Logo">
+  <img class="logo logo-light" src="data:image/png;base64,$logoLight" alt="TWS Logo">
+  <div class="qa-content">
+    <div class="icon-badge bg-cyan text-cyan" style="width:64px;height:64px;border-radius:1rem;display:flex;align-items:center;justify-content:center"><svg fill="none" viewBox="0 0 24 24" style="width:32px;height:32px;stroke-width:1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+    <div class="qa-title">Your Turn.</div>
+    <div class="qa-subtitle">Ask Anything.</div>
+    <div class="qa-tags">
+      <span class="qa-tag">Career</span>
+      <span class="qa-tag">Development</span>
+      <span class="qa-tag">AI</span>
+      <span class="qa-tag">Projects</span>
+      <span class="qa-tag">IT Industry</span>
+    </div>
+  </div>
+  <div class="slide-footer"><span>FROM COLLEGE TO CODE</span><span>11 / 12</span></div>
+</div>
+
+<!-- Click zones for navigation -->
+<div class="click-zone click-zone-left" onclick="prevSlide()" title="Previous"></div>
+<div class="click-zone click-zone-right" onclick="nextSlide()" title="Next"></div>
+</div>
+
+<!-- Navigation Controls -->
+<div class="nav-controls">
+  <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    Previous
+  </button>
+  <button class="nav-btn" id="nextBtn" onclick="nextSlide()">
+    Next
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
+</div>
+
+<script>
+let current = 0;
+const total = 12;
+const slides = document.querySelectorAll('.slide');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progressFill = document.getElementById('progressFill');
+
+function goToSlide(n) {
+  if (n < 0 || n >= total) return;
+  slides[current].classList.remove('active');
+  slides[current].classList.add(n > current ? 'prev' : '');
+  setTimeout(() => slides[current === n ? current : (n > current ? current : current)], 0);
+  
+  // Remove all classes first
+  slides.forEach(s => { s.classList.remove('active','prev'); });
+  
+  current = n;
+  slides[current].classList.add('active');
+  
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === total - 1;
+  progressFill.style.width = ((current + 1) / total * 100) + '%';
+}
+
+function nextSlide() { goToSlide(current + 1); }
+function prevSlide() { goToSlide(current - 1); }
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+});
+
+function setTheme(theme, btn) {
+  document.documentElement.setAttribute('data-theme', theme === 'dark' ? '' : theme);
+  if (theme === 'dark') document.documentElement.removeAttribute('data-theme');
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
+"@
+
+# Write the file
+[System.IO.File]::WriteAllText("$PWD\From_College_to_Code.html", $html, [System.Text.Encoding]::UTF8)
+Write-Output "HTML presentation generated successfully: From_College_to_Code.html"

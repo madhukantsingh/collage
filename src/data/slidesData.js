@@ -85,7 +85,7 @@ export const SLIDES = [
     id: 11,
     number: "11",
     section: "SECTION 08 — AI + SOFTWARE DEVELOPMENT",
-    title: "Let’s Build Something With AI",
+    title: "The AI-Powered Developer Workflow",
     type: "buildai",
     footerIndex: "10 / 12"
   },

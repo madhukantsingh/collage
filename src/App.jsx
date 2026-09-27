@@ -145,7 +145,7 @@ export default function App() {
 
   return (
     <div
-      className="app-container"
+      className={`app-container ${isFullscreen ? 'is-fullscreen' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >

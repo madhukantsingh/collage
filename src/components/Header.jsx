@@ -32,48 +32,41 @@ export default function Header({
         </div>
       </div>
 
-      <div className="header-right">
-        {/* Theme Picker */}
-        <div className="theme-picker">
-          <button
-            className={`theme-btn theme-btn-dark ${currentTheme === 'dark' ? 'active' : ''}`}
-            onClick={() => setTheme('dark')}
-            title="Dark Theme"
-            aria-label="Dark Theme"
-          />
-          <button
-            className={`theme-btn theme-btn-light ${currentTheme === 'light' ? 'active' : ''}`}
-            onClick={() => setTheme('light')}
-            title="Light Theme (White Screen)"
-            aria-label="Light Theme"
-          />
-          <button
-            className={`theme-btn theme-btn-purple ${currentTheme === 'purple' ? 'active' : ''}`}
-            onClick={() => setTheme('purple')}
-            title="Purple Cyberpunk Theme"
-            aria-label="Purple Theme"
-          />
-        </div>
+      {!isFullscreen && (
+        <div className="header-right">
+          {/* Theme Picker */}
+          <div className="theme-picker">
+            <button
+              className={`theme-btn theme-btn-dark ${currentTheme === 'dark' ? 'active' : ''}`}
+              onClick={() => setTheme('dark')}
+              title="Dark Theme"
+              aria-label="Dark Theme"
+            />
+            <button
+              className={`theme-btn theme-btn-light ${currentTheme === 'light' ? 'active' : ''}`}
+              onClick={() => setTheme('light')}
+              title="Light Theme (White Screen)"
+              aria-label="Light Theme"
+            />
+            <button
+              className={`theme-btn theme-btn-purple ${currentTheme === 'purple' ? 'active' : ''}`}
+              onClick={() => setTheme('purple')}
+              title="Purple Cyberpunk Theme"
+              aria-label="Purple Theme"
+            />
+          </div>
 
-        {/* Fullscreen Toggle App Button */}
-        <button
-          className="btn-action"
-          onClick={toggleFullscreen}
-          title={isFullscreen ? "Exit Fullscreen (F)" : "Enter Fullscreen (F)"}
-        >
-          {isFullscreen ? (
-            <>
-              <Minimize size={16} />
-              <span>Exit Fullscreen</span>
-            </>
-          ) : (
-            <>
-              <Maximize size={16} />
-              <span>Fullscreen App</span>
-            </>
-          )}
-        </button>
-      </div>
+          {/* Fullscreen Toggle App Button */}
+          <button
+            className="btn-action"
+            onClick={toggleFullscreen}
+            title="Enter Fullscreen (F)"
+          >
+            <Maximize size={16} />
+            <span>Fullscreen App</span>
+          </button>
+        </div>
+      )}
     </header>
   );
 }

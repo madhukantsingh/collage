@@ -193,6 +193,12 @@ html, body, #root {
   gap: 0.85rem;
 }
 
+/* Hide theme color switcher and fullscreen button when in Fullscreen mode */
+:fullscreen .header-right,
+.is-fullscreen .header-right {
+  display: none !important;
+}
+
 /* Theme Switcher */
 .theme-picker {
   display: flex;
@@ -299,25 +305,9 @@ html, body, #root {
   }
 }
 
-/* Side Navigation Arrows Overlay */
+/* Side Navigation Arrows Overlay (Hidden as requested) */
 .nav-side-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 60;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--surface-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.75;
+  display: none !important;
 }
 .nav-side-arrow:hover:not(:disabled) {
   opacity: 1;
@@ -783,49 +773,130 @@ html, body, #root {
   color: var(--accent-primary);
 }
 
-/* AI & Demo Flow */
+/* Slide 10 — AI Replace Slide */
 .ai-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 1.5rem;
-  padding: 2rem 0;
+  gap: 1.75rem;
+  padding: 1.5rem 0;
+  width: 100%;
+  height: 100%;
 }
+
 .ai-icon-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1.5rem;
+  margin: 0.5rem 0;
 }
+
 .ai-subtitle {
   font-size: 1.15rem;
   color: var(--text-muted);
-  max-width: 600px;
+  max-width: 620px;
   line-height: 1.5;
+  text-align: center;
 }
 
-.demo-flow {
+/* AI & Power-Tools Grid (Slide 11) */
+.ai-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.ai-tool-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 0.95rem;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+.ai-tool-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-primary);
+}
+
+.ai-tool-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  margin: 2rem 0;
+  justify-content: space-between;
 }
-.demo-step {
+
+.ai-tool-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  border: 1px solid var(--surface-border);
+}
+
+.ai-tool-title {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-top: 0.2rem;
+}
+
+.ai-tool-desc {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* AI Bottom Bar & Quote */
+.ai-bottom-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.ai-comparison-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   background: var(--surface);
   border: 1px solid var(--surface-border);
-  padding: 1.5rem 2rem;
-  border-radius: 1rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
 }
-.demo-arrow {
-  font-size: 2rem;
-  color: var(--accent-primary);
+
+.ai-pill {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.ai-pill-ai {
+  color: var(--icon-cyan);
+}
+.ai-pill-human {
+  color: var(--icon-purple);
+}
+.ai-pill-divider {
+  color: var(--text-muted);
   font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.ai-quote {
+  max-width: 680px;
+  text-align: center;
+  border-left: 4px solid var(--accent-primary);
+  font-size: 0.88rem;
 }
 
 /* Q&A Slide */
